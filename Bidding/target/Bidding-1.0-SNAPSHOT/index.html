@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start Page</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="./js/autobahn.min.js"></script>
+        <script src="./js/jquery-1.11.0.min.js"></script>
+    </head>
+    <body>
+        <h1>Bidding</h1>
+        <script>
+            
+            var topic = "http://example.com/auction#bidding";
+        function onEvent(topic, event) {
+          console.log("Message from topic: " + topic + ":" + event);
+          console.log(event.valueOf());
+          var bidder = event.valueOf()["bidder"];
+          var amount = event.valueOf()["amount"];
+          var auction = event.valueOf()["auction"] + 1;
+          addChatText("Auction " + auction, bidder + " with $" + amount);
+        }
+
+    function setUpControls (session) {
+          $("#send-button").click(function() {
+            var message = $("#chatLine").val();
+            var json = { auction: 0, amount: 500, bidder: "Brendon" };
+                session.publish(topic, json);
+          });
+    }
+    
+            window.onload = function() {
+
+               // connect to WAMP server
+               ab.connect("ws://localhost:8080/Bidding/wamp",
+
+                  // WAMP session was established
+                  function (session) {
+                     alert("connected successfully");
+                     session.subscribe(topic, onEvent);
+                     setUpControls(session);
+                  },
+
+                  // WAMP session is gone
+                  function (code, reason) {
+                            alert(reason);
+                     // things to do once the session fails
+                  }
+               ,{skipSubprotocolCheck:true, skipSubprotocolAnnounce:true});
+            };
+
+</script>
+  
+<script type="text/javascript">  
+function addChatText(by,text){  
+  var ca = document.getElementById('chatArea');  
+  var p = document.createElement( "div" );  
+  if(by!=null){  
+    var span = document.createElement( "span" );  
+    span.innerHTML = by + ': ';  
+    p.appendChild(span);  
+  }  
+  var htmlText = document.createElement ("span");  
+  htmlText.innerHTML = text;  
+  p.appendChild (htmlText);  
+  ca.appendChild(p);  
+  ca.scrollTop = 50000;  
+}
+
+</script>  
+<div id='chatArea' style='border:1px solid #aaa; width:500px; height:200px; overflow:auto;'></div>    
+
+    </body>
+</html>
